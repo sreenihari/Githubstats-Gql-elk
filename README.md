@@ -1,2 +1,2 @@
-# Traveloka---DevOps-Challenge
+# Traveloka DevOps-Challenge
 Devops Challenges

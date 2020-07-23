@@ -5,7 +5,7 @@ const fs = require('fs');
 const Papa = require('papaparse');
 const { parse } = require('path');
 
-const csvFilePath = './public/repolist.csv'
+const csvFilePath = './InputOutput/repolist.csv'
 
 const file = fs.createReadStream(csvFilePath);
 
@@ -82,6 +82,8 @@ app.get('/data', async (req, res) => {
   op = JSON.stringify(data, replacer, "    ")
 
   let jsonString = JSON.parse(op)
+  fs.writeFileSync('./InputOutput/output.csv',op);
+
   //console.log(jsonString.data.id0.name)
   //console.log(
    // Object.keys(jsonString).map(function(key){ return data[key] }))
@@ -120,7 +122,7 @@ for (var key in Object.keys(jsonString)) {
     return csv;
   }/*
   
-  fs.writeFileSync('./public/output.csv',toCSV(op));
+  fs.writeFileSync('./InputOutput/output.csv',toCSV(op));
 
    //op = JSON.stringify(data, null, "    ")
  

@@ -4,13 +4,12 @@ const app = express()
 const fs = require('fs');
 const Papa = require('papaparse');
 const { parse } = require('path');
-let variables=[]
-
-function renderQuery()
-{
+var _ = require('lodash');
 const csvFilePath = './InputOutput/repolist.csv'
 const file = fs.createReadStream(csvFilePath);
- 
+let variables=[]
+let noOfRecords = 0
+
 let query = `{`
 let cbase = `object(expression: "master") {
   ... on Commit {
@@ -27,6 +26,7 @@ name
 },`
 let cquery = `}`
 
+
 Papa.parse(file, {
   header: true,
   dynamicTyping : true,
@@ -38,8 +38,9 @@ Papa.parse(file, {
   complete: function(results, file) {
 
      for (var i = 0 in variables) {
-     console.log(variables[i]);
-     query = query + "id" + i + ":" +
+     // console.log(variables[i]);
+      ++noOfRecords;
+      query = query + "id" + i + ":" +
               `repository(owner: "${variables[i].repoOwner}", name: "${variables[i].repoName}") {` + 
               cbase
       
@@ -49,16 +50,11 @@ Papa.parse(file, {
     //console.log(query)
   }})
 
- return query;
-}
-
 app.use(express.static('public'))
 
 app.get('/data', async (req, res) => {
   
   const url = 'https://api.github.com/graphql'
-
-  const queryRendered = renderQuery()
   
   const options = {
     method: 'post',
@@ -66,7 +62,7 @@ app.get('/data', async (req, res) => {
       'content-type': 'application/json',
       'authorization': 'bearer ' + process.env.APIKEY
     },
-    body: JSON.stringify({ 'query': queryRendered ,'variables': variables }),
+    body: JSON.stringify({ 'query': query ,'variables': variables }),
   }
 
   let response
@@ -79,64 +75,35 @@ app.get('/data', async (req, res) => {
   }
   const data = await response.json()
   res.json(data)
-  
-  const replacer = (key, value) =>
-  typeof value === 'undefined' ? null : value;
 
-  op = JSON.stringify(data, replacer, "    ")
+ let header = "Name\tClone URL\tDate of last commit\tName of last author"
 
-  let jsonString = JSON.parse(op)
-  fs.writeFileSync('./InputOutput/output.csv',op);
+ const fd = fs.openSync("./InputOutput/output.csv", "w+");  
+ 
+ fs.writeSync(fd, header, 0, "utf8");
 
-  //console.log(jsonString.data.id0.name)
-  //console.log(
-   // Object.keys(jsonString).map(function(key){ return data[key] }))
+ for (var i = 0 in variables) {
+ 
+  let id = 'id' + i;
+  if(false === (_.get(data,'data.'.concat(id)) === null)) 
+ {
+   let name = _.get(data,'data.'.concat(id).concat('.name'))
+   //console.log(name)
 
-   for(let r in jsonString){  //for in loop iterates all properties in an object
-    //console.log(r) ;  //print all properties in sequence
-    //console.log(jsonString[r]);//print all properties values
-    for(let q in jsonString[r]){
-     // console.log(jsonString[r][q].author);
-     for (var key in Object.keys(jsonString[r][q])) {
-      var t = Object.keys(jsonString[r][q])[key];
-      console.log(t + " value =: " + jsonString[t]);
-      
-    }
-    }
-   }
+   let clone_url = _.get(data,'data.'.concat(id).concat('.object.repository.url'))
+   //console.log(clone_url)
 
-   /*  this is the answer here  */
-for (var key in Object.keys(jsonString)) {
-  var t = Object.keys(jsonString)[key];
-  console.log(t + " value =: " + jsonString[t]);
-  
+   let lastcommitdate = _.get(data,'data.'.concat(id).concat('.object.author.date'))
+   //console.log(lastcommitdate)
+
+   let lastcommitname = _.get(data,'data.'.concat(id).concat('.object.author.name'))
+   //console.log(lastcommitname)
+
+   let outputStr = "\n" + name + "\t" + clone_url + "\t" + lastcommitdate + "\t" + lastcommitname
+
+   fs.appendFileSync('./InputOutput/output.csv',outputStr);
+ }
 }
-
-
-  /*function toCSV(json) {
-    json = Object.values(json);
-    var csv = "";
-    var keys = (json[0] && Object.keys(json[0])) || [];
-    //console.log(keys)
-    csv += keys.join(',') ;
-    for (var line of json) {
-      //console.log(line)
-      csv += keys.map(key => line[key]).join(',') ;
-    }
-    return csv;
-  }/*
-  
-  fs.writeFileSync('./InputOutput/output.csv',toCSV(op));
-
-   //op = JSON.stringify(data, null, "    ")
- 
-   /*try {
-    fs.writeFileSync('user.json', op);
-    console.log("JSON data is saved.");
-} catch (error) {
-    console.error(err);
-}*/
- 
 
 })
 

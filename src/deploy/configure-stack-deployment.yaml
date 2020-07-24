@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: configure-stack
+  name: configure-stack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.19.0 (f63a961c)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: configure-stack
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - -c
+        - cat /usr/local/bin/configure-stack.sh | tr -d "\r" | bash
+        env:
+        - name: ELASTIC_VERSION
+        - name: ES_DEFAULT_INDEX_PATTERN
+        - name: ES_PASSWORD
+        image: 'docker.elastic.co/beats/metricbeat:'
+        name: configure-stack
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/local/bin/configure-stack.sh
+          name: configure-stack-claim0
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: configure-stack-claim0
+        persistentVolumeClaim:
+          claimName: configure-stack-claim0
+          readOnly: true
+status: {}

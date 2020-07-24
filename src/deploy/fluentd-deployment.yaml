@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentd
+  name: fluentd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.19.0 (f63a961c)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: fluentd
+    spec:
+      containers:
+      - image: fluentd-with-elastic
+        name: fluentd
+        ports:
+        - containerPort: 24224
+        resources: {}
+        volumeMounts:
+        - mountPath: /fluentd/etc
+          name: fluentd-claim0
+      restartPolicy: Always
+      volumes:
+      - name: fluentd-claim0
+        persistentVolumeClaim:
+          claimName: fluentd-claim0
+status: {}

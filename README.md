@@ -1,6 +1,4 @@
-## DevOps Assessment of Traveloka
-
-This repo has the source code for both Challenge 1( Github Stats ) and Challenge 2( Docker Nginx + Log Management ). With some basic steps the user will be able to run the WebApp(Github Stats) and also provision a basic system which is easy to administer and develop. The WebApp was developed using Node/Express using graphql queries to consume data from Github using the [Github GraphQL API](https://developer.github.com/v4/).The design decision to use graphql was due to the fact of the extensive framework support from Github one of the early adopters of graphql coupled with Node/express which serves the basic needs of a WebApp.Later the same App is run on a NGINX server and also demonstrate data ingestion to ELK Stack. Kibana was skipped here because of the high computing resources needed. Fluentd was used to feed access logs from NGINX to elastic. All this has been achieved using Docker compose. This matches the requirements mentioned in the challenge(s) !!
+This repo has the source code for Github Stats and Docker Nginx + Log Management). With some basic steps the user will be able to run the WebApp(Github Stats) and also provision a basic system which is easy to administer and develop. The WebApp was developed using Node/Express using graphql queries to consume data from Github using the [Github GraphQL API](https://developer.github.com/v4/).The design decision to use graphql was due to the fact of the extensive framework support from Github one of the early adopters of graphql coupled with Node/express which serves the basic needs of a WebApp.Later the same App is run on a NGINX server and also demonstrate data ingestion to ELK Stack. Kibana was skipped here because of the high computing resources needed. Fluentd was used to feed access logs from NGINX to elastic. All this has been achieved using Docker compose. This matches the requirements mentioned in the challenge(s) !!
 Finally [Kompose](https://kompose.io/) the conversion tool was used to convert docker compose to kubernetes (Kubernetes deployment on EKS cluster is currently in progress)
 
 Following are some miminal steps required to get the application working. As a pre-requisite Docker standalone tools are required to build dockerfiles and docker compose files 
@@ -82,12 +80,9 @@ NGINX is configuired at http://localhost:2345. It will redirected to the web app
 ```
 fluentd            | 2020-07-24 12:26:24.000000000 +0000 httpd.access: {"container_id":"a85070ae72ef2fd1b0beca2cabd067bd2397201d72be05a6fd610f6cebd23c13","container_name":"/nginx-server-container","source":"stdout","log":"172.18.0.1 - - [24/Jul/2020:12:26:24 +0000] \"GET /data HTTP/1.1\" 304 0 \"http://localhost:2345/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36\""}
 ```
-Elastic search is configured at http://localhost:9200.( P.S : Unfortunately my laptop was completely out of memory and couldnt verify integration with kibana) 
+Elastic search is configured at http://localhost:9200.
 
-5) Docker compose is very good for development environments. However for real production kubernetes is preferred. I discovered that there is a handy tool to convert the docker compose to kubernetes deployments which is kompose. I have generated in ./src/deploy folders. Additionally I configuired EKS and ECS on AWS with few cloudformation templated and will continue hosting this on AWS to see how to scale this solution for my learning.
-
-Enjoy!
-
+5) Docker compose is very good for development environments. However for real production kubernetes is preferred. I discovered that there is a handy tool to convert the docker compose to kubernetes deployments which is kompose. I have generated in ./src/deploy folders. 
 
 
 
